@@ -15,10 +15,12 @@ class RouteGenerator {
         return MaterialPageRoute(
           builder: (_) => ProductDetailScreen(productId: productId),
         );
+      case RouteNames.testing:
+        return MaterialPageRoute(builder: (_) => const TestingScreen());
 
       default:
         // Fallback screen if route is not found
-        return MaterialPageRoute(builder: (_) => const ProductHomeScreen());
+        return MaterialPageRoute(builder: (_) => const TestingScreen());
     }
   }
 }

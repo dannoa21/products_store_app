@@ -1,48 +1,57 @@
 part of '../index.dart';
 
 /// Centralized application theme.
-///
-/// This acts as the foundation of the design system:
+/// Supports both light and dark modes.
+/// Acts as the foundation of the design system:
 /// - Defines colors using [ColorScheme]
 /// - Standardizes typography
 /// - Provides consistent component styling (buttons, inputs, cards)
 /// - Supports extensibility via [ThemeExtension]
 class AppTheme {
+  /// Light mode theme
   static ThemeData get light {
-    /// Primary brand color used across the app
     const primaryColor = Color(0xFF3A6DBA);
 
-    /// Material 3 color system
-    ///
-    /// Using ColorScheme ensures:
-    /// - Easy dark mode support later
-    /// - Consistent color usage across components
     final colorScheme = ColorScheme.light(
       primary: primaryColor,
       onPrimary: Colors.white,
-
       secondary: const Color(0xFF007AFE),
       onSecondary: Colors.white,
-
       surface: const Color(0xFFF8F8F8),
       onSurface: const Color(0xFF1A1A1A),
-
       error: const Color(0xFFFC0330),
       onError: Colors.white,
     );
 
+    return _buildTheme(colorScheme);
+  }
+
+  /// Dark mode theme
+  static ThemeData get dark {
+    const primaryColor = Color(0xFF3A6DBA);
+
+    final colorScheme = ColorScheme.dark(
+      primary: primaryColor,
+      onPrimary: Colors.white,
+      secondary: const Color(0xFF007AFE),
+      onSecondary: Colors.black,
+      surface: const Color(0xFF1E1E1E),
+      onSurface: Colors.white,
+      error: const Color(0xFFFC0330),
+      onError: Colors.black,
+    );
+
+    return _buildTheme(colorScheme);
+  }
+
+  /// Shared theme builder for both light and dark
+  static ThemeData _buildTheme(ColorScheme colorScheme) {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-
-      /// Global font family
       fontFamily: 'Outfit',
 
-      /// Typography system
-      ///
-      /// Note:
-      /// - Avoid hardcoded colors like Colors.white
-      /// - Always rely on colorScheme for adaptability
+      /// Typography
       textTheme: TextTheme(
         displayLarge: TextStyle(
           fontSize: 32,
@@ -61,15 +70,11 @@ class AppTheme {
         ),
         bodyMedium: TextStyle(
           fontSize: 14,
-
-          /// Slightly reduced opacity for secondary text
           color: colorScheme.onSurface.withValues(alpha: 0.7),
         ),
       ),
 
-      /// Elevated button styling
-      ///
-      /// Ensures all primary buttons look consistent across the app
+      /// Elevated buttons
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: colorScheme.primary,
@@ -81,12 +86,10 @@ class AppTheme {
         ),
       ),
 
-      /// Input field styling (TextField, TextFormField)
-      ///
-      /// Provides consistent look for all input components
+      /// Input fields
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: colorScheme.surface,
         hintStyle: TextStyle(
           color: colorScheme.onSurface.withValues(alpha: 0.5),
         ),
@@ -96,24 +99,19 @@ class AppTheme {
         ),
       ),
 
-      /// Card styling
-      ///
-      /// Used for containers, list items, etc.
+      /// Cards
       cardTheme: CardThemeData(
-        color: Colors.white,
+        color: colorScheme.surface,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
 
-      /// Bottom sheet styling
+      /// Bottom sheets
       bottomSheetTheme: const BottomSheetThemeData(
         dragHandleColor: Color(0x2972767A),
       ),
 
-      /// Custom theme extensions
-      ///
-      /// Used for semantic colors that are not part of Material defaults
-      /// (e.g., success, warning, info)
+      /// Custom semantic colors
       extensions: const [
         AppColorsExtension(
           success: Color(0xFF37C83D),
