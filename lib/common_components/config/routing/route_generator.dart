@@ -7,7 +7,17 @@ class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case RouteNames.productHome:
-        return MaterialPageRoute(builder: (_) => const ProductHomeScreen());
+        //TODO: MOVE THE BLOC PROVIDER here
+        return MaterialPageRoute(
+          builder: (_) {
+            return const ProductHomeScreen();
+            // return BlocProvider(
+            //   create: (_) =>
+            //       ProductCubit(repository: context.read<ProductRepository>()),
+            //   child: const ProductHomeScreen(),
+            // );
+          },
+        );
 
       case RouteNames.productDetail:
         // Expecting the product ID to be passed as an argument
