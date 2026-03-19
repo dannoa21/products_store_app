@@ -162,6 +162,11 @@ class _ProductHomeScreenState extends State<ProductHomeScreen> {
                       product: product,
                       onTap: () {
                         // Navigate later
+                        Navigator.pushNamed(
+                          context,
+                          RouteNames.productDetail,
+                          arguments: product.id,
+                        );
                       },
                     );
                   },
