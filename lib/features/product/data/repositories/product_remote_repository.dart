@@ -1,10 +1,11 @@
 // lib/features/product/data/repositories/product_remote_repository.dart
 
 import 'dart:convert';
-import 'dart:math';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 import 'package:products_store_app/core/network/network_base_service.dart';
+import 'package:products_store_app/features/product/data/mappers/product_detail_mapper.dart';
+import 'package:products_store_app/features/product/data/mappers/product_mapper.dart';
 import 'package:products_store_app/features/product/domain/value_objects/product_detail.dart';
 import '../../domain/value_objects/product.dart';
 import '../../domain/repositories/product_repository.dart';
@@ -16,8 +17,6 @@ class ProductRemoteRepository implements ProductRepository {
   static const String _baseUrl = 'https://dummyjson.com';
 
   ProductRemoteRepository({required this.networkService});
-
-  int _temp = 0;
 
   @override
   Future<Either<ProductFailure, List<Product>>> getProducts({
@@ -48,19 +47,17 @@ class ProductRemoteRepository implements ProductRepository {
           : responseData;
 
       // For search/category endpoints, items might be inside "products"
-      final List productsJson = data['products'] ?? data;
+      final List productsJson = (data is Map<String, dynamic>)
+          ? (data['products'] is List ? data['products'] as List : const [])
+          : (data is List ? data : const []);
 
-      final products = productsJson.map<Product>((e) {
-        return Product(
-          id: e['id'],
-          title: e['title'],
-          price: (e['price'] as num).toDouble(),
-          thumbnail: e['thumbnail'] ?? '',
-        );
-      }).toList();
+      final products = productsJson
+          .whereType<Map<String, dynamic>>()
+          .map<Product>(ProductMapper.fromMap)
+          .toList();
 
       return Right(products);
-    } catch (e, s) {
+    } catch (e) {
       if (!kDebugMode) {
         // Log error in production via some logging service
       }
@@ -76,31 +73,14 @@ class ProductRemoteRepository implements ProductRepository {
       final url = '$_baseUrl/products/$id';
       final responseData = await networkService.get(url: url, parameters: {});
 
-      final data = responseData is String
+      final decodedData = responseData is String
           ? jsonDecode(responseData)
-          : responseData as Map<String, dynamic>;
+          : responseData;
+      final data = decodedData is Map<String, dynamic>
+          ? decodedData
+          : <String, dynamic>{};
 
-      final productDetail = ProductDetail(
-        id: data['id'],
-        title: data['title'] ?? "Unknown Product",
-        description: data['description'] ?? "",
-        category: data['category'] ?? "Uncategorized",
-        price: data['price'] == null ? 0.0 : (data['price'] as num).toDouble(),
-        discountPercentage: data["discountPercentage"] == null
-            ? 0.0
-            : (data['discountPercentage'] as num).toDouble(),
-        rating: data['rating'] == null
-            ? 0.0
-            : (data['rating'] as num).toDouble(),
-        stock: data['stock'] ?? 0,
-        brand: data['brand'] ?? "",
-        sku: data['sku'] ?? "",
-        availabilityStatus: data['availabilityStatus'] ?? "",
-        warrantyInformation:
-            data['warrantyInformation'] ?? "No warranty information",
-        shippingInformation: data['shippingInformation'] ?? "No shipping info",
-        images: List<String>.from(data['images'] ?? []),
-      );
+      final productDetail = ProductDetailMapper.fromMap(data, fallbackId: id);
 
       return Right(productDetail);
     } catch (e) {

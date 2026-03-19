@@ -14,41 +14,58 @@ class ProductDetailScreen extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           } else if (state is ProductDetailLoaded) {
             final product = state.product;
-            debugPrint("image size ${product.images.length}");
+            final validImages = product.images.where(_isValidImageUrl).toList();
+            final hasValidPrice = product.price >= 0;
 
             return SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    height: 300, // height set for the image gallery
-                    child: PageView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: product.images.length,
-                      itemBuilder: (context, index) {
-                        final imageUrl = product.images[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Image.network(imageUrl, fit: BoxFit.cover),
-                        );
-                      },
+                  if (validImages.isEmpty)
+                    _buildLargeImagePlaceholder()
+                  else
+                    SizedBox(
+                      height: 300, // height set for the image gallery
+                      child: PageView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: validImages.length,
+                        itemBuilder: (context, index) {
+                          final imageUrl = validImages[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Image.network(
+                              imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                debugPrint(
+                                  'Product detail image failed to load for id ${product.id}: $imageUrl',
+                                );
+                                return _buildLargeImagePlaceholder();
+                              },
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 16),
                   Text(
-                    product.title,
+                    _defaultIfEmpty(product.title, 'Unknown product'),
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    product.brand,
+                    _defaultIfEmpty(product.brand, 'Unknown brand'),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
-                  Text(product.description),
+                  Text(_defaultIfEmpty(product.description, 'No description')),
                   const SizedBox(height: 8),
-                  Text('Price: \$${product.price}'),
+                  Text(
+                    hasValidPrice
+                        ? 'Price: \$${product.price.toStringAsFixed(2)}'
+                        : 'Price unavailable',
+                  ),
                   Text('Discount: ${product.discountPercentage}%'),
                   Text('Rating: ${product.rating}'),
                   Text('Stock: ${product.stock}'),
@@ -61,6 +78,34 @@ class ProductDetailScreen extends StatelessWidget {
 
           return const SizedBox.shrink();
         },
+      ),
+    );
+  }
+
+  static bool _isValidImageUrl(String value) {
+    if (value.trim().isEmpty) return false;
+    final uri = Uri.tryParse(value.trim());
+    return uri != null &&
+        uri.hasScheme &&
+        (uri.scheme == 'http' || uri.scheme == 'https') &&
+        uri.host.isNotEmpty;
+  }
+
+  static String _defaultIfEmpty(String value, String fallback) {
+    if (value.trim().isEmpty) return fallback;
+    return value;
+  }
+
+  static Widget _buildLargeImagePlaceholder() {
+    return Container(
+      height: 300,
+      width: double.infinity,
+      color: Colors.grey.shade200,
+      alignment: Alignment.center,
+      child: const Icon(
+        Icons.image_not_supported_outlined,
+        size: 48,
+        color: Colors.grey,
       ),
     );
   }

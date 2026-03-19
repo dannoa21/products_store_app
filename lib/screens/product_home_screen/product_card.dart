@@ -10,6 +10,8 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final hasValidImage = _isValidImageUrl(product.thumbnail);
+    final hasValidPrice = product.price >= 0;
 
     return GestureDetector(
       onTap: onTap,
@@ -21,12 +23,20 @@ class ProductCard extends StatelessWidget {
               /// Product Image
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  product.thumbnail,
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                ),
+                child: hasValidImage
+                    ? Image.network(
+                        product.thumbnail,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          debugPrint(
+                            'Product image failed to load for id ${product.id}: ${product.thumbnail}',
+                          );
+                          return _buildImagePlaceholder();
+                        },
+                      )
+                    : _buildImagePlaceholder(),
               ),
 
               const SizedBox(width: 12),
@@ -44,7 +54,9 @@ class ProductCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "\$${product.price}",
+                      hasValidPrice
+                          ? '\$${product.price.toStringAsFixed(2)}'
+                          : 'Price unavailable',
                       style: theme.textTheme.bodyMedium,
                     ),
                   ],
@@ -54,6 +66,25 @@ class ProductCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  static bool _isValidImageUrl(String value) {
+    if (value.trim().isEmpty) return false;
+    final uri = Uri.tryParse(value.trim());
+    return uri != null &&
+        uri.hasScheme &&
+        (uri.scheme == 'http' || uri.scheme == 'https') &&
+        uri.host.isNotEmpty;
+  }
+
+  static Widget _buildImagePlaceholder() {
+    return Container(
+      width: 60,
+      height: 60,
+      color: Colors.grey.shade200,
+      alignment: Alignment.center,
+      child: const Icon(Icons.image_not_supported_outlined, color: Colors.grey),
     );
   }
 }
