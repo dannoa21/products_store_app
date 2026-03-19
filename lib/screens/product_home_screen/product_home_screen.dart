@@ -62,6 +62,50 @@ class _ProductHomeScreenState extends State<ProductHomeScreen> {
             ),
           ),
 
+          // 2️⃣ Category chips
+          BlocBuilder<CategoryCubit, CategoryState>(
+            builder: (context, state) {
+              if (state is CategoryLoaded) {
+                return CategoryChipsRow(
+                  categories: state.categories,
+                  selectedCategorySlug: state.selected?.slug,
+                  onSelected: (nameOrNull) {
+                    final loaded = state;
+                    final selectedCategory = nameOrNull == null
+                        ? null
+                        : loaded.categories.firstWhere(
+                            (c) => c.slug == nameOrNull,
+                          );
+                    context.read<CategoryCubit>().selectCategory(
+                      selectedCategory,
+                    );
+                    final query = _searchController.text;
+                    context.read<ProductCubit>().fetchProducts(
+                      query: query.isEmpty ? null : query,
+                      category:
+                          selectedCategory?.slug, // slug goes to products API
+                    );
+                  },
+                );
+              }
+
+              // if (state is CategoryLoading) {
+              //   return const SizedBox(
+              //     height: 48,
+              //     child: Center(child: CircularProgressIndicator()),
+              //   );
+              // }
+              // if (state is CategoryError) {
+              //   return Padding(
+              //     padding: const EdgeInsets.all(12),
+              //     child: Text('Failed to load categories'),
+              //   );
+              // }
+              // maybe handle initial state or other states if needed (doesn't seem like it'll be needed)
+              return const SizedBox.shrink();
+            },
+          ),
+
           /// 📦 Product list
           Expanded(
             child: BlocConsumer<ProductCubit, ProductState>(
