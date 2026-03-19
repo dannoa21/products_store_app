@@ -26,12 +26,6 @@ class ProductRemoteRepository implements ProductRepository {
     String? category,
   }) async {
     try {
-      _temp += 1;
-      print("temp $_temp");
-      if (skip > 0 && _temp % 2 == 0) {
-        print("exceptino");
-        throw Exception("Simulated pagination error");
-      }
       String url = '$_baseUrl/products?limit=$limit&skip=$skip';
 
       // Apply search query
