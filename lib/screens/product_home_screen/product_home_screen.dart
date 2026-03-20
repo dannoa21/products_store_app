@@ -10,6 +10,7 @@ class ProductHomeScreen extends StatefulWidget {
 class _ProductHomeScreenState extends State<ProductHomeScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
+  final Debouncer _searchDebouncer = Debouncer(milliseconds: 1000);
 
   @override
   void initState() {
@@ -31,13 +32,29 @@ class _ProductHomeScreenState extends State<ProductHomeScreen> {
 
   @override
   void dispose() {
+    _searchDebouncer.dispose();
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
   void _onSearch() {
-    context.read<ProductCubit>().fetchProducts(query: _searchController.text);
+    final categoryState = context.read<CategoryCubit>().state;
+    final selectedCategorySlug = categoryState is CategoryLoaded
+        ? categoryState.selected?.slug
+        : null;
+    final normalizedQuery = _searchController.text.trim();
+
+    context.read<ProductCubit>().fetchProducts(
+      query: normalizedQuery.isEmpty ? null : normalizedQuery,
+      category: selectedCategorySlug,
+    );
+  }
+
+  void _onSearchChanged(String _) {
+    _searchDebouncer.run(() {
+      _onSearch();
+    });
   }
 
   @override
@@ -51,6 +68,7 @@ class _ProductHomeScreenState extends State<ProductHomeScreen> {
             padding: const EdgeInsets.all(12),
             child: TextField(
               controller: _searchController,
+              onChanged: _onSearchChanged,
               onSubmitted: (_) => _onSearch(),
               decoration: InputDecoration(
                 hintText: 'Search products...',
