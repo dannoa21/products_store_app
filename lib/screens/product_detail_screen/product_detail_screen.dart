@@ -15,6 +15,9 @@ class ProductDetailScreen extends StatelessWidget {
           } else if (state is ProductDetailLoaded) {
             final product = state.product;
             final validImages = product.images.where(_isValidImageUrl).toList();
+            debugPrint(
+              "images ${product.images.length} valids ${validImages.length}",
+            );
             final hasValidPrice = product.price >= 0;
 
             return SingleChildScrollView(
@@ -33,16 +36,26 @@ class ProductDetailScreen extends StatelessWidget {
                         itemBuilder: (context, index) {
                           final imageUrl = validImages[index];
                           return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Image.network(
-                              imageUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                debugPrint(
-                                  'Product detail image failed to load for id ${product.id}: $imageUrl',
-                                );
-                                return _buildLargeImagePlaceholder();
-                              },
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
+                            ),
+                            // child: Image.network(
+                            //   imageUrl,
+                            //   fit: BoxFit.cover,
+                            //   errorBuilder: (context, error, stackTrace) {
+                            //     debugPrint(
+                            //       'Product detail image failed to load for id ${product.id}: $imageUrl',
+                            //     );
+                            //     return _buildLargeImagePlaceholder();
+                            //   },
+                            // ),
+                            child: ImageViewer(
+                              imageUrl: product.images[index],
+                              width: 60,
+                              height: 60,
+                              boxFit: BoxFit.cover,
+                              borderRadius: BorderRadius.circular(8),
+                              placeholder: ImagePlaceholder(),
                             ),
                           );
                         },

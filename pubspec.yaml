@@ -38,6 +38,8 @@ dependencies:
   dio: ^5.9.2
   # state management
   flutter_bloc: ^8.1.5
+  #library of images, which supports placeholder(loading)/ failed state, cache network,
+  extended_image: ^8.2.0
 
 dev_dependencies:
   flutter_test:

@@ -20,6 +20,7 @@ class ProductCubit extends Cubit<ProductState> {
 
   /// Initial fetch / refresh
   Future<void> fetchProducts({String? query, String? category}) async {
+    print("fetch called");
     if (_isFetching) return;
 
     _currentQuery = query;

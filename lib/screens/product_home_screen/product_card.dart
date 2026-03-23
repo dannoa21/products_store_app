@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:products_store_app/features/product/domain/value_objects/product.dart';
+import 'package:products_store_app/common_components/widgets/index.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
@@ -10,7 +11,7 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final hasValidImage = _isValidImageUrl(product.thumbnail);
+    // final hasValidImage = _isValidImageUrl(product.thumbnail);
     final hasValidPrice = product.price >= 0;
 
     return GestureDetector(
@@ -21,24 +22,14 @@ class ProductCard extends StatelessWidget {
           child: Row(
             children: [
               /// Product Image
-              ClipRRect(
+              ImageViewer(
+                imageUrl: product.thumbnail,
+                width: 60,
+                height: 60,
+                boxFit: BoxFit.cover,
                 borderRadius: BorderRadius.circular(8),
-                child: hasValidImage
-                    ? Image.network(
-                        product.thumbnail,
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          debugPrint(
-                            'Product image failed to load for id ${product.id}: ${product.thumbnail}',
-                          );
-                          return _buildImagePlaceholder();
-                        },
-                      )
-                    : _buildImagePlaceholder(),
+                placeholder: ImagePlaceholder(),
               ),
-
               const SizedBox(width: 12),
 
               /// Product Info
@@ -69,22 +60,12 @@ class ProductCard extends StatelessWidget {
     );
   }
 
-  static bool _isValidImageUrl(String value) {
-    if (value.trim().isEmpty) return false;
-    final uri = Uri.tryParse(value.trim());
-    return uri != null &&
-        uri.hasScheme &&
-        (uri.scheme == 'http' || uri.scheme == 'https') &&
-        uri.host.isNotEmpty;
-  }
-
-  static Widget _buildImagePlaceholder() {
-    return Container(
-      width: 60,
-      height: 60,
-      color: Colors.grey.shade200,
-      alignment: Alignment.center,
-      child: const Icon(Icons.image_not_supported_outlined, color: Colors.grey),
-    );
-  }
+  // static bool _isValidImageUrl(String value) {
+  //   if (value.trim().isEmpty) return false;
+  //   final uri = Uri.tryParse(value.trim());
+  //   return uri != null &&
+  //       uri.hasScheme &&
+  //       (uri.scheme == 'http' || uri.scheme == 'https') &&
+  //       uri.host.isNotEmpty;
+  // }
 }

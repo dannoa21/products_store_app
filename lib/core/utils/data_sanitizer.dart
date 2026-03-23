@@ -16,10 +16,16 @@ class DataSanitizer {
   static bool isValidImageUrl(dynamic value) {
     if (value is! String || value.trim().isEmpty) return false;
     final uri = Uri.tryParse(value.trim());
-    return uri != null &&
+    bool isValid =
+        uri != null &&
         uri.hasScheme &&
         (uri.scheme == 'http' || uri.scheme == 'https') &&
         (uri.host.isNotEmpty);
+
+    if (!isValid) {
+      logWarning('Invalid image URL: $value');
+    }
+    return isValid;
   }
 
   static String readString(
