@@ -82,6 +82,7 @@ class ProductDetailScreen extends StatelessWidget {
                   Text('Discount: ${product.discountPercentage}%'),
                   Text('Rating: ${product.rating}'),
                   Text('Stock: ${product.stock}'),
+                  Text('Category: ${product.category}'),
                 ],
               ),
             );
