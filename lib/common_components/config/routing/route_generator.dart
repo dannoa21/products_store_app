@@ -10,12 +10,11 @@ class RouteGenerator {
         //TODO: MOVE THE BLOC PROVIDER here
         return MaterialPageRoute(
           builder: (_) {
-            return const ProductHomeScreen();
-            // return BlocProvider(
-            //   create: (_) =>
-            //       ProductCubit(repository: context.read<ProductRepository>()),
-            //   child: const ProductHomeScreen(),
-            // );
+            return BlocProvider(
+              create: (context) =>
+                  ProductCubit(repository: context.read<ProductRepository>()),
+              child: ProductHomeScreen(),
+            );
           },
         );
 
