@@ -1,5 +1,3 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/repositories/product_repository.dart';
 import '../../domain/value_objects/product_detail.dart';
 
 abstract class ProductDetailState {

@@ -11,6 +11,7 @@ class _ProductHomeScreenState extends State<ProductHomeScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   final Debouncer _searchDebouncer = Debouncer(milliseconds: 1000);
+  int? _selectedProductId;
 
   @override
   void initState() {
@@ -59,10 +60,8 @@ class _ProductHomeScreenState extends State<ProductHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Products')),
-      body: Column(
-        children: [
+    Widget listContent = Column(
+      children: [
           /// 🔍 Search bar
           Padding(
             padding: const EdgeInsets.all(12),
@@ -179,12 +178,17 @@ class _ProductHomeScreenState extends State<ProductHomeScreen> {
                     return ProductCard(
                       product: product,
                       onTap: () {
-                        // Navigate later
-                        Navigator.pushNamed(
-                          context,
-                          RouteNames.productDetail,
-                          arguments: product.id,
-                        );
+                        if (MediaQuery.of(context).size.width >= LayoutConstants.tabletBreakpoint) {
+                          setState(() {
+                            _selectedProductId = product.id;
+                          });
+                        } else {
+                          Navigator.pushNamed(
+                            context,
+                            RouteNames.productDetail,
+                            arguments: product.id,
+                          );
+                        }
                       },
                     );
                   },
@@ -193,7 +197,50 @@ class _ProductHomeScreenState extends State<ProductHomeScreen> {
             ),
           ),
         ],
-      ),
+      );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= LayoutConstants.tabletBreakpoint) {
+          return Scaffold(
+            body: Row(
+              children: [
+                SizedBox(
+                  width: LayoutConstants.dualScreenMasterWidth,
+                  child: Scaffold(
+                    appBar: AppBar(title: const Text('Products')),
+                    body: listContent,
+                  ),
+                ),
+                const VerticalDivider(width: 1, thickness: 1),
+                Expanded(
+                  child: _selectedProductId == null
+                      ? Scaffold(
+                          appBar: AppBar(title: const Text('Product Detail')),
+                          body: const Center(
+                            child: Text('Select a product to view details'),
+                          ),
+                        )
+                      : BlocProvider(
+                          key: ValueKey(_selectedProductId),
+                          create: (context) => ProductDetailCubit(
+                            repository: context.read<ProductRepository>(),
+                          )..fetchProductDetail(_selectedProductId!),
+                          child: ProductDetailScreen(
+                            productId: _selectedProductId!,
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return Scaffold(
+          appBar: AppBar(title: const Text('Products')),
+          body: listContent,
+        );
+      },
     );
   }
 

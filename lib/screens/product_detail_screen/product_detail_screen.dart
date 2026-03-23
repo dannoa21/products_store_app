@@ -39,23 +39,13 @@ class ProductDetailScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8.0,
                             ),
-                            // child: Image.network(
-                            //   imageUrl,
-                            //   fit: BoxFit.cover,
-                            //   errorBuilder: (context, error, stackTrace) {
-                            //     debugPrint(
-                            //       'Product detail image failed to load for id ${product.id}: $imageUrl',
-                            //     );
-                            //     return _buildLargeImagePlaceholder();
-                            //   },
-                            // ),
                             child: ImageViewer(
-                              imageUrl: product.images[index],
+                              imageUrl: imageUrl,
                               width: 60,
                               height: 60,
                               boxFit: BoxFit.cover,
                               borderRadius: BorderRadius.circular(8),
-                              placeholder: ImagePlaceholder(),
+                              placeholder: const ImagePlaceholder(),
                             ),
                           );
                         },

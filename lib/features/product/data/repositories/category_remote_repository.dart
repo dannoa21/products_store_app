@@ -33,12 +33,12 @@ class CategoryRemoteRepository implements CategoryRepository {
       // Expecting a list of category strings
       // final List<Category> categories = List<Category>.from(data);
       final List<Category> categories = data.map((item) {
-        print("item is ${item.toString()}");
+        debugPrint("item is ${item.toString()}");
         return Category.fromJson(item as Map<String, dynamic>);
       }).toList();
 
       return categories;
-    } catch (e, s) {
+    } catch (e) {
       if (!kDebugMode) {
         // Log error in production via a logging service
       }
