@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:products_store_app/core/utils/data_sanitizer.dart';
 import 'package:products_store_app/features/product/domain/value_objects/product.dart';
 import 'package:products_store_app/common_components/widgets/index.dart';
 
@@ -12,7 +13,8 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     // final hasValidImage = _isValidImageUrl(product.thumbnail);
-    final hasValidPrice = product.price >= 0;
+    final hasValidPrice =
+        product.price != DataSanitizer.invalidPriceFallbackValue;
 
     return GestureDetector(
       onTap: onTap,

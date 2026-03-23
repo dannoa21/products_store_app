@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 class DataSanitizer {
   const DataSanitizer._();
 
-  static const double invalidPrice = -1.0;
+  static const double invalidPriceFallbackValue = -1.0;
 
   static void logWarning(String message) {
     debugPrint('Product data warning: $message');
@@ -73,7 +73,7 @@ class DataSanitizer {
     logError(
       'Invalid or missing price for $context. value=$value. Using unavailable price.',
     );
-    return invalidPrice;
+    return invalidPriceFallbackValue;
   }
 
   static String readImageUrl(
