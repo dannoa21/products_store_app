@@ -82,6 +82,7 @@ The UI uses a small set of reusable, themed components so screens stay declarati
 
 ### Deviations from the spec (design-system-related)
 - The app has a consistent theme and reusable components, but it does not implement skeleton/shimmer placeholders for the initial list load (it uses a standard `CircularProgressIndicator` instead).
+- In the interest of saving time, GoRouter was not used; this repo uses `MaterialApp.onGenerateRoute` with `RouteGenerator` and passes `productId` via `RouteSettings.arguments` instead. There is no URL-based deep linking.
 
 ## 4. Limitations
 Areas that would be improved with more time (or where the current implementation is a shortcut relative to the assessment spec):
@@ -99,7 +100,7 @@ Areas that would be improved with more time (or where the current implementation
     - search requests drop pagination parameters (`limit/skip`)
     - category requests drop the search query when both are provided (last condition wins)
   - Because of this, pagination and the “search + category filters work together” requirement may not behave correctly for filtered results.
-- Testing coverage (spec requirement)
+- Testing coverage (spec requirement) -- For all testing types
   - The repo contains only a generic Flutter widget smoke test (`test/widget_test.dart`), not unit tests for Cubit/data validation nor widget tests for at least two design system components.
 
 ## 5. AI Tools Usage
