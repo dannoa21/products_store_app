@@ -3,8 +3,8 @@ import 'package:products_store_app/features/product/domain/value_objects/categor
 
 class CategoryChipsRow extends StatelessWidget {
   final List<Category> categories;
-  final String? selectedCategorySlug; // <- slug
-  final Function(String?) onSelected; // <- slug or null
+  final String? selectedCategorySlug;
+  final Function(String?) onSelected;
 
   const CategoryChipsRow({
     super.key,
@@ -40,3 +40,4 @@ class CategoryChipsRow extends StatelessWidget {
     );
   }
 }
+

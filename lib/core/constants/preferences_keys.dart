@@ -4,3 +4,4 @@ part of 'index.dart';
 class SharedPreferencesKeys {
   static const String authToken = 'AUTH_TOKEN_KEY'; //TODO: replace
 }
+

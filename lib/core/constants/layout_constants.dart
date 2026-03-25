@@ -7,3 +7,4 @@ class LayoutConstants {
   /// The fixed width for the master list view on tablet screens
   static const double dualScreenMasterWidth = 350;
 }
+

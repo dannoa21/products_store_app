@@ -4,3 +4,4 @@ part of 'index.dart';
 class AppConstants {
   static const String apiBaseUrl = 'https://dummyjson.com';
 }
+

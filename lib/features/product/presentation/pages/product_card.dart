@@ -7,12 +7,16 @@ class ProductCard extends StatelessWidget {
   final Product product;
   final VoidCallback? onTap;
 
-  const ProductCard({super.key, required this.product, this.onTap});
+  const ProductCard({
+    super.key,
+    required this.product,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // final hasValidImage = _isValidImageUrl(product.thumbnail);
+
     final hasValidPrice =
         product.price != DataSanitizer.invalidPriceFallbackValue;
 
@@ -61,13 +65,5 @@ class ProductCard extends StatelessWidget {
       ),
     );
   }
-
-  // static bool _isValidImageUrl(String value) {
-  //   if (value.trim().isEmpty) return false;
-  //   final uri = Uri.tryParse(value.trim());
-  //   return uri != null &&
-  //       uri.hasScheme &&
-  //       (uri.scheme == 'http' || uri.scheme == 'https') &&
-  //       uri.host.isNotEmpty;
-  // }
 }
+

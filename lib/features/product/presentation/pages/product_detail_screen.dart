@@ -1,9 +1,32 @@
-part of 'index.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:products_store_app/common_components/widgets/index.dart';
+import 'package:products_store_app/features/product/domain/repositories/product_repository.dart';
+import 'package:products_store_app/features/product/presentation/blocs/product_detail_cubit.dart';
+import 'package:products_store_app/features/product/presentation/blocs/product_detail_state.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final int productId;
-  const ProductDetailScreen({super.key, required this.productId});
 
+  const ProductDetailScreen({
+    super.key,
+    required this.productId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Recreate the cubit when the selected product changes.
+    return BlocProvider<ProductDetailCubit>(
+      key: ValueKey(productId),
+      create: (context) => ProductDetailCubit(
+        repository: context.read<ProductRepository>(),
+      )..fetchProductDetail(productId),
+      child: _ProductDetailView(),
+    );
+  }
+}
+
+class _ProductDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,10 +37,14 @@ class ProductDetailScreen extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           } else if (state is ProductDetailLoaded) {
             final product = state.product;
-            final validImages = product.images.where(_isValidImageUrl).toList();
+            final validImages =
+                product.images.where(_isValidImageUrl).toList();
+
+            // Useful while validating image URL parsing.
             debugPrint(
               "images ${product.images.length} valids ${validImages.length}",
             );
+
             final hasValidPrice = product.price >= 0;
 
             return SingleChildScrollView(
@@ -29,7 +56,7 @@ class ProductDetailScreen extends StatelessWidget {
                     _buildLargeImagePlaceholder()
                   else
                     SizedBox(
-                      height: 300, // height set for the image gallery
+                      height: 300,
                       child: PageView.builder(
                         scrollDirection: Axis.horizontal,
                         itemCount: validImages.length,
@@ -114,3 +141,4 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 }
+

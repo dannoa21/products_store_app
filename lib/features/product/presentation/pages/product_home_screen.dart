@@ -1,0 +1,265 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:products_store_app/core/utils/debouncer.dart';
+import 'package:products_store_app/features/product/domain/repositories/category_repository.dart';
+import 'package:products_store_app/features/product/domain/repositories/product_repository.dart';
+import 'package:products_store_app/features/product/presentation/blocs/category_cubit.dart';
+import 'package:products_store_app/features/product/presentation/blocs/product_cubit.dart';
+import 'package:products_store_app/features/product/presentation/pages/category_chips_row.dart';
+import 'package:products_store_app/features/product/presentation/pages/product_card.dart';
+import 'package:products_store_app/features/product/presentation/pages/product_detail_screen.dart';
+import 'package:products_store_app/core/constants/index.dart';
+
+class ProductHomeScreen extends StatelessWidget {
+  const ProductHomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Create the cubits at the feature page boundary.
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<ProductCubit>(
+          create: (context) => ProductCubit(
+            repository: context.read<ProductRepository>(),
+          )..fetchProducts(),
+        ),
+        BlocProvider<CategoryCubit>(
+          create: (context) => CategoryCubit(
+            repository: context.read<CategoryRepository>(),
+          )..fetchCategories(),
+        ),
+      ],
+      child: const _ProductHomeScreenView(),
+    );
+  }
+}
+
+class _ProductHomeScreenView extends StatefulWidget {
+  const _ProductHomeScreenView();
+
+  @override
+  State<_ProductHomeScreenView> createState() =>
+      _ProductHomeScreenViewState();
+}
+
+class _ProductHomeScreenViewState extends State<_ProductHomeScreenView> {
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+  final Debouncer _searchDebouncer = Debouncer(milliseconds: 1000);
+  int? _selectedProductId;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Infinite scroll.
+    _scrollController.addListener(_paginationListener);
+  }
+
+  void _paginationListener() {
+    if (_scrollController.position.pixels + 100 >
+        _scrollController.position.maxScrollExtent) {
+      context.read<ProductCubit>().fetchMoreProducts();
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchDebouncer.dispose();
+    _scrollController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearch() {
+    final categoryState = context.read<CategoryCubit>().state;
+    final selectedCategorySlug = categoryState is CategoryLoaded
+        ? categoryState.selected?.slug
+        : null;
+
+    final normalizedQuery = _searchController.text.trim();
+
+    context.read<ProductCubit>().fetchProducts(
+          query: normalizedQuery.isEmpty ? null : normalizedQuery,
+          category: selectedCategorySlug,
+        );
+  }
+
+  void _onSearchChanged(String _) {
+    _searchDebouncer.run(() {
+      _onSearch();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget listContent = Column(
+      children: [
+        /// Search bar
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: TextField(
+            controller: _searchController,
+            onChanged: _onSearchChanged,
+            onSubmitted: (_) => _onSearch(),
+            decoration: const InputDecoration(
+              hintText: 'Search products...',
+            ).copyWith(
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.search),
+                onPressed: _onSearch,
+              ),
+            ),
+          ),
+        ),
+
+        /// Category chips
+        BlocBuilder<CategoryCubit, CategoryState>(
+          builder: (context, state) {
+            if (state is CategoryLoaded) {
+              return CategoryChipsRow(
+                categories: state.categories,
+                selectedCategorySlug: state.selected?.slug,
+                onSelected: (nameOrNull) {
+                  final selectedCategory = nameOrNull == null
+                      ? null
+                      : state.categories.firstWhere((c) => c.slug == nameOrNull);
+
+                  context.read<CategoryCubit>().selectCategory(
+                        selectedCategory,
+                      );
+
+                  final query = _searchController.text;
+                  context.read<ProductCubit>().fetchProducts(
+                        query: query.isEmpty ? null : query,
+                        category: selectedCategory?.slug,
+                      );
+                },
+              );
+            }
+
+            return const SizedBox.shrink();
+          },
+        ),
+
+        /// Product list
+        Expanded(
+          child: BlocConsumer<ProductCubit, ProductState>(
+            listener: (context, state) {
+              if (state is ProductError && state.products.isNotEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    action: SnackBarAction(
+                      label: 'Retry',
+                      onPressed: () {
+                        context.read<ProductCubit>().fetchMoreProducts();
+                      },
+                    ),
+                  ),
+                );
+              }
+            },
+            builder: (context, state) {
+              // Initial loading
+              if (state is ProductLoading && state.products.isEmpty) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              // Error (with empty list)
+              if (state is ProductError && state.products.isEmpty) {
+                return Center(child: Text(state.message));
+              }
+
+              final products = state.products;
+
+              if (products.isEmpty) {
+                return const Center(child: Text('No products found'));
+              }
+
+              return ListView.builder(
+                controller: _scrollController,
+                itemCount: products.length + 1, // +1 for loader
+                itemBuilder: (context, index) {
+                  if (index == products.length) {
+                    // Bottom loader
+                    if (state is ProductLoadingMore) {
+                      return const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+
+                    return const SizedBox.shrink();
+                  }
+
+                  final product = products[index];
+
+                  return ProductCard(
+                    product: product,
+                    onTap: () {
+                      if (MediaQuery.of(context).size.width >=
+                          LayoutConstants.tabletBreakpoint) {
+                        setState(() {
+                          _selectedProductId = product.id;
+                        });
+                      } else {
+                        Navigator.pushNamed(
+                          context,
+                          RouteNames.productDetail,
+                          arguments: product.id,
+                        );
+                      }
+                    },
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= LayoutConstants.tabletBreakpoint) {
+          return Scaffold(
+            body: Row(
+              children: [
+                SizedBox(
+                  width: LayoutConstants.dualScreenMasterWidth,
+                  child: Scaffold(
+                    appBar: AppBar(title: const Text('Products')),
+                    body: listContent,
+                  ),
+                ),
+                const VerticalDivider(width: 1, thickness: 1),
+                Expanded(
+                  child: _selectedProductId == null
+                      ? Scaffold(
+                          appBar:
+                              AppBar(title: const Text('Product Detail')),
+                          body: const Center(
+                            child: Text(
+                              'Select a product to view details',
+                            ),
+                          ),
+                        )
+                      : ProductDetailScreen(
+                          productId: _selectedProductId!,
+                        ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return Scaffold(
+          appBar: AppBar(title: const Text('Products')),
+          body: listContent,
+        );
+      },
+    );
+  }
+}
+

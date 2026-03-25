@@ -7,3 +7,4 @@ class RouteNames {
   static const testing =
       '/testing'; //TODO(P3): remove later once splash screen is implemented
 }
+
