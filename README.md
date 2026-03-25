@@ -102,6 +102,8 @@ Areas that would be improved with more time (or where the current implementation
   - Because of this, pagination and the “search + category filters work together” requirement may not behave correctly for filtered results.
 - Testing coverage (spec requirement) -- For all testing types
   - The repo contains only a generic Flutter widget smoke test (`test/widget_test.dart`), not unit tests for Cubit/data validation nor widget tests for at least two design system components.
+- Additional reference repo for unimplemented features:
+  - See the related `ar_indoor_nav_admin` codebase here: https://github.com/Group16AAiT/ar_indoor_navigation/tree/main/ar_indoor_nav_admin
 
 ## 5. AI Tools Usage
 Briefly document your actual AI tool usage here (edit to match what you really used):
